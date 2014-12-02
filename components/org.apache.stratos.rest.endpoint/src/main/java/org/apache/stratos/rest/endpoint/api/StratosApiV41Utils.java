@@ -670,7 +670,7 @@ public class StratosApiV41Utils {
         return PojoConverter.populatePartitionGroupPojos(partitionGroups);
     }
 
-    static Cartridge getAvailableCartridgeInfo(String cartridgeType, Boolean multiTenant, ConfigurationContext configurationContext) throws RestAPIException {
+    private static Cartridge getAvailableCartridgeInfo(String cartridgeType, Boolean multiTenant, ConfigurationContext configurationContext) throws RestAPIException {
         List<Cartridge> cartridges = getAvailableCartridges(null, multiTenant, configurationContext);
         for (Cartridge cartridge : cartridges) {
             if (cartridge.getCartridgeType().equals(cartridgeType)) {
@@ -682,7 +682,7 @@ public class StratosApiV41Utils {
         throw new RestAPIException(msg);
     }
 
-    static List<Cartridge> getAvailableLbCartridges(Boolean multiTenant,
+    private static List<Cartridge> getAvailableLbCartridges(Boolean multiTenant,
                                                     ConfigurationContext configurationContext) throws RestAPIException {
         List<Cartridge> cartridges = getAvailableCartridges(null, multiTenant,
                 configurationContext);
@@ -700,6 +700,33 @@ public class StratosApiV41Utils {
 		}*/
         return lbCartridges;
     }
+    
+    static List<Cartridge> getFilteredCartridges(String cartridgeCategory, ConfigurationContext configurationContext) throws RestAPIException {
+        List<Cartridge> cartridges = new ArrayList<Cartridge>();
+        if(cartridgeCategory == "singleTenant") {
+        	cartridges = getAvailableCartridges(null, false, configurationContext);
+        }
+        else if(cartridgeCategory == "multiTenant") {
+        	cartridges = getAvailableCartridges(null, true, configurationContext);
+        }
+        else if(cartridgeCategory == "loadBalancer") {
+        	cartridges = getAvailableLbCartridges(false, configurationContext);
+        }
+        return cartridges;
+    }
+    
+    static Cartridge getFilteredCartridge(String cartridgeCategory, String cartridgeType, ConfigurationContext configurationContext) throws RestAPIException {   	
+    	List<Cartridge> cartridges = getFilteredCartridges(cartridgeCategory, configurationContext);
+    	for (Cartridge cartridge : cartridges) {
+            if (cartridge.getCartridgeType().equals(cartridgeType)) {
+                return cartridge;
+            }
+        }
+        String msg = "Unavailable cartridge type: " + cartridgeType;
+        log.error(msg);
+        return null;
+    }
+    
 
     static List<Cartridge> getAvailableCartridges(String cartridgeSearchString, Boolean multiTenant, ConfigurationContext configurationContext) throws RestAPIException {
         List<Cartridge> cartridges = new ArrayList<Cartridge>();

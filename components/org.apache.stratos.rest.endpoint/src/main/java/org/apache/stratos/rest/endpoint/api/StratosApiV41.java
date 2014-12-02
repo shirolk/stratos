@@ -42,7 +42,7 @@ import org.apache.stratos.rest.endpoint.bean.ApplicationBean;
 import org.apache.stratos.rest.endpoint.bean.CartridgeInfoBean;
 import org.apache.stratos.rest.endpoint.bean.StratosApiResponse;
 import org.apache.stratos.rest.endpoint.bean.SubscriptionDomainRequest;
-import org.apache.stratos.rest.endpoint.bean.autoscaler.partition.Partition;
+//import org.apache.stratos.rest.endpoint.bean.autoscaler.partition.Partition;
 import org.apache.stratos.rest.endpoint.bean.autoscaler.policy.autoscale.AutoscalePolicy;
 import org.apache.stratos.rest.endpoint.bean.autoscaler.policy.deployment.DeploymentPolicy;
 import org.apache.stratos.rest.endpoint.bean.cartridge.definition.CartridgeDefinitionBean;
@@ -93,6 +93,12 @@ public class StratosApiV41 extends AbstractApi {
     @Context
     UriInfo uriInfo;
 
+    /**
+     * This method gets called by the CLI to validate the Stratos Manager URL
+     *
+     * @return the response
+     * @throws RestAPIException the rest api exception
+     */
     @GET
     @Path("/init")
     @AuthorizationAction("/permission/admin/restlogin")
@@ -126,7 +132,7 @@ public class StratosApiV41 extends AbstractApi {
         return Response.ok().header("WWW-Authenticate", "Basic").type(MediaType.APPLICATION_JSON).
                 entity(Utils.buildAuthenticationSuccessMessage(sessionId)).build();
     }
-
+    
     @POST
     @Path("/cartridges")
     @Produces("application/json")
@@ -140,7 +146,8 @@ public class StratosApiV41 extends AbstractApi {
         return Response.created(url).build();
 
     }
-
+    
+    
     @GET
     @Path("/cartridges")
     @Produces("application/json")
@@ -163,6 +170,7 @@ public class StratosApiV41 extends AbstractApi {
         return Response.noContent().build();
     }
 
+    /*
     @GET
     @Path("/cartridges/singleTenant")
     @Produces("application/json")
@@ -173,8 +181,33 @@ public class StratosApiV41 extends AbstractApi {
         ResponseBuilder rb = Response.ok();
         rb.entity(cartridges.isEmpty() ? new Cartridge[0] : cartridges.toArray(new Cartridge[cartridges.size()]));
         return rb.build();
+    }*/
+    
+    @GET
+    @Path("/cartridges?category")
+    @Produces("application/json")
+    @Consumes("application/json")
+    @AuthorizationAction("/permission/admin/manage/view/cartridge")
+    public Response getFilteredCartridges(@QueryParam ("category") String cartridgeCategory) throws RestAPIException {
+        List<Cartridge> cartridges = StratosApiV41Utils.getFilteredCartridges(cartridgeCategory, getConfigContext());
+        ResponseBuilder rb = Response.ok();
+        rb.entity(cartridges.isEmpty() ? new Cartridge[0] : cartridges.toArray(new Cartridge[cartridges.size()]));
+        return rb.build();
+    }
+    
+    @GET
+    @Path("/cartridges?category{cartridgeType}")
+    @Produces("application/json")
+    @Consumes("application/json")
+    @AuthorizationAction("/permission/admin/manage/view/cartridge")
+    public Response getFilteredCartridge(@QueryParam ("category") String cartridgeCategory, @PathParam ("cartridgeType") String cartridgeType) throws RestAPIException {
+        Cartridge cartridge = StratosApiV41Utils.getFilteredCartridge(cartridgeCategory, cartridgeType, getConfigContext());
+        ResponseBuilder rb = Response.ok();
+        rb.entity(cartridge);
+        return rb.build();
     }
 
+    /*
     @GET
     @Path("/cartridges/multiTenant")
     @Produces("application/json")
@@ -186,7 +219,9 @@ public class StratosApiV41 extends AbstractApi {
         rb.entity(cartridges.isEmpty() ? new Cartridge[0] : cartridges.toArray(new Cartridge[cartridges.size()]));
         return rb.build();
     }
+    */
     
+    /*
     @GET
     @Path("/cartridges/{cartridgeType}/deploymentPolicy")
     @Produces("application/json")
@@ -195,8 +230,9 @@ public class StratosApiV41 extends AbstractApi {
     public Response getValidDeploymentPoliciesOfCartridge(@PathParam("cartridgeType") String cartridgeType)
             throws RestAPIException {
         return Response.ok().entity(StratosApiV41Utils.getDeploymentPolicies(cartridgeType)).build();
-    }
+    }*/
     
+    /*
     @GET
     @Path("/cartridges/{cartridgeType}/singleTenant")
     @Produces("application/json")
@@ -208,7 +244,9 @@ public class StratosApiV41 extends AbstractApi {
         rb.entity(StratosApiV41Utils.getAvailableCartridgeInfo(cartridgeType, null, getConfigContext()));
         return rb.build();
     }
+    */
 
+    /*
     @GET
     @Path("/cartridges/loadBalancer")
     @Produces("application/json")
@@ -218,6 +256,7 @@ public class StratosApiV41 extends AbstractApi {
         List<Cartridge> lbCartridges = StratosApiV41Utils.getAvailableLbCartridges(false, getConfigContext());
         return Response.ok().entity(lbCartridges.isEmpty() ? new Cartridge[0] : lbCartridges.toArray(new Cartridge[lbCartridges.size()])).build();
     }
+    */
 
     @POST
     @Path("/groups")
@@ -388,7 +427,7 @@ public class StratosApiV41 extends AbstractApi {
 //    }
 
     @GET
-    @Path("/autoscalePolicies")
+    @Path("/autoscalingPolicies")
     @Produces("application/json")
     @Consumes("application/json")
     @AuthorizationAction("/permission/admin/manage/view/autoscalingPolicy")
@@ -397,7 +436,7 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     @POST
-    @Path("/autoscalePolicies")
+    @Path("/autoscalingPolicies")
     @Produces("application/json")
     @Consumes("application/json")
     @AuthorizationAction("/permission/admin/manage/add/autoscalingPolicy")
@@ -410,7 +449,7 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     @PUT
-    @Path("/autoscalePolicies")
+    @Path("/autoscalingPolicies")
     @Produces("application/json")
     @Consumes("application/json")
     @AuthorizationAction("/permission/admin/manage/add/autoscalingPolicy")
@@ -422,7 +461,7 @@ public class StratosApiV41 extends AbstractApi {
     }
 
     @GET
-    @Path("/autoscalePolicies/{autoscalePolicyId}")
+    @Path("/autoscalingPolicies/{autoscalePolicyId}")
     @Produces("application/json")
     @Consumes("application/json")
     @AuthorizationAction("/permission/admin/manage/view/autoscalingPolicy")
