@@ -93,7 +93,6 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
         this.appId = appId;
         networkPartitionCtxts = new HashMap<String, GroupLevelNetworkPartitionContext>();
         partitionContexts = new ArrayList<GroupLevelPartitionContext>();
-        setGroupInstanceIdMap(new HashMap<String, GroupInstance>());
     }
 
     @Override
