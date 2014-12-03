@@ -36,11 +36,13 @@ import org.apache.stratos.autoscaler.monitor.events.GroupStatusEvent;
 import org.apache.stratos.autoscaler.monitor.events.MonitorScalingEvent;
 import org.apache.stratos.autoscaler.monitor.events.MonitorStatusEvent;
 import org.apache.stratos.autoscaler.monitor.events.builder.MonitorStatusEventBuilder;
+import org.apache.stratos.autoscaler.context.partition.PartitionContext;
 import org.apache.stratos.autoscaler.pojo.policy.PolicyManager;
 import org.apache.stratos.autoscaler.pojo.policy.deployment.ChildPolicy;
 import org.apache.stratos.autoscaler.pojo.policy.deployment.DeploymentPolicy;
 import org.apache.stratos.autoscaler.pojo.policy.deployment.partition.network.ChildLevelNetworkPartition;
 import org.apache.stratos.autoscaler.util.ServiceReferenceHolder;
+import org.apache.stratos.autoscaler.pojo.policy.deployment.partition.network.ChildLevelPartition;
 import org.apache.stratos.messaging.domain.applications.Application;
 import org.apache.stratos.messaging.domain.applications.ApplicationStatus;
 import org.apache.stratos.messaging.domain.applications.Group;
@@ -330,7 +332,6 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
                     if (group.getInstanceContexts(parentInstanceId) == null || contexts1.isEmpty() ||
                             contexts1.size() == 0) {
                         instanceIds.add(parentInstanceId);
-
                     }
                 }
                 if (instanceIds.size() > 0) {
@@ -354,7 +355,7 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
      * @param parentInstanceIds parent instanceIds used to start the child instance
      * @throws TopologyInConsistentException
      */
-
+    // TODO: SK
     public void createInstanceAndStartDependency(Group group, List<String> parentInstanceIds)
             throws TopologyInConsistentException {
         List<String> instanceIds = new ArrayList<String>();
@@ -381,8 +382,10 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
                         null, null);
                 this.addNetworkPartitionContext(groupLevelNetworkPartitionContext);
             }
+            
             String partitionId = null;
             String networkPartitionId = parentInstanceContext.getNetworkPartitionId();
+            
             if (deploymentPolicyName != null) {
                 DeploymentPolicy deploymentPolicy = PolicyManager.getInstance()
                         .getDeploymentPolicy(deploymentPolicyName);
@@ -390,7 +393,12 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
                         getChildLevelNetworkPartition(parentInstanceContext.getNetworkPartitionId());
 
                 AutoscaleAlgorithm algorithm = this.getAutoscaleAlgorithm(networkPartition.getPartitionAlgo());
-                //Partition partition = algorithm.getNextScaleUpPartitionContext(groupLevelNetworkPartitionContext, this.id);
+                ChildLevelPartition[] partitions = networkPartition.getChildLevelPartitions();
+                for (ChildLevelPartition partition : partitions) {
+                	partitionId = partition.getPartitionId();
+                	PartitionContext  
+                }
+                Partition partition = algorithm.getNextScaleUpPartitionContext(groupLevelNetworkPartitionContext, this.id);
                 //TODO need to find the partition. partitionId=?
             }
 
