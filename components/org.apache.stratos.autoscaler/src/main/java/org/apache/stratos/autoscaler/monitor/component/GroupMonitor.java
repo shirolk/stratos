@@ -25,7 +25,6 @@ import org.apache.stratos.autoscaler.applications.ApplicationHolder;
 import org.apache.stratos.autoscaler.applications.dependency.context.ApplicationChildContext;
 import org.apache.stratos.autoscaler.applications.dependency.context.GroupChildContext;
 import org.apache.stratos.autoscaler.applications.topic.ApplicationBuilder;
-import org.apache.stratos.autoscaler.context.AutoscalerContext;
 import org.apache.stratos.autoscaler.context.group.GroupInstanceContext;
 import org.apache.stratos.autoscaler.context.partition.GroupLevelPartitionContext;
 import org.apache.stratos.autoscaler.context.partition.PartitionContext;
@@ -40,7 +39,6 @@ import org.apache.stratos.autoscaler.monitor.events.MonitorStatusEvent;
 import org.apache.stratos.autoscaler.monitor.events.builder.MonitorStatusEventBuilder;
 import org.apache.stratos.autoscaler.pojo.policy.PolicyManager;
 import org.apache.stratos.autoscaler.pojo.policy.deployment.ChildPolicy;
-import org.apache.stratos.autoscaler.pojo.policy.deployment.DeploymentPolicy;
 import org.apache.stratos.autoscaler.pojo.policy.deployment.partition.network.ChildLevelNetworkPartition;
 import org.apache.stratos.autoscaler.pojo.policy.deployment.partition.network.ChildLevelPartition;
 import org.apache.stratos.autoscaler.util.ServiceReferenceHolder;
@@ -66,15 +64,15 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
 
     private static final Log log = LogFactory.getLog(GroupMonitor.class);
 
-    //whether groupScaling enabled or not
+    //Indicates whether groupScaling enabled or not
     private boolean groupScalingEnabled;
-    //network partition contexts
+    //Network partition contexts
     private Map<String, GroupLevelNetworkPartitionContext> networkPartitionCtxts;
     //Group level partition contexts
     private List<GroupLevelPartitionContext> partitionContexts;
-    //Whether the monitor is destroyed or not
+    //Indicates whether the monitor is destroyed or not
     private boolean isDestroyed;
-    //monitoring interval of the monitor
+    //Monitoring interval of the monitor
     private int monitoringIntervalMilliseconds = 60000;     //TODO get this from config file
 
     /**
@@ -108,10 +106,7 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
             } catch (InterruptedException ignore) {
             }
         }
-
-
     }
-
 
     public void monitor() {
 
@@ -119,12 +114,10 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
             @Override
             public void run() {
                 //TODO implement group monitor
-
             }
         };
         monitoringRunnable.run();
     }
-
 
     /**
      * Will set the status of the monitor based on Topology Group status/child status like scaling
@@ -337,115 +330,6 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
         }
         return initialStartup;
     }
-
-    /**
-     * This will create the required instance and start the dependency
-     *
-     * @param group             blue print of the instance to be started
-     * @param parentInstanceIds parent instanceIds used to start the child instance
-     * @throws TopologyInConsistentException
-     */
-    /* 
-    public void createInstanceAndStartDependency(Group group, List<String> parentInstanceIds)
-            throws TopologyInConsistentException {
-        List<String> instanceIds = new ArrayList<String>();
-        String deploymentPolicyName = group.getDeploymentPolicy();
-
-        String instanceId;
-        for (String parentInstanceId : parentInstanceIds) {
-            Application application = ApplicationHolder.getApplications().getApplication(this.appId);
-            Instance parentInstanceContext;
-            if (this.id.equals(appId)) {
-                parentInstanceContext = application.getInstanceContexts(parentInstanceId);
-            } else {
-                Group group1 = application.getGroupRecursively(this.parent.getId());
-                parentInstanceContext = group1.getInstanceContexts(parentInstanceId);
-            }
-
-            GroupLevelNetworkPartitionContext groupLevelNetworkPartitionContext;
-            if (this.networkPartitionCtxts.containsKey(parentInstanceContext)) {
-                groupLevelNetworkPartitionContext = this.networkPartitionCtxts.
-                        get(parentInstanceContext.getNetworkPartitionId());
-            } else {
-                groupLevelNetworkPartitionContext = new GroupLevelNetworkPartitionContext(
-                        parentInstanceContext.getNetworkPartitionId(),
-                        null, null);
-                this.addNetworkPartitionContext(groupLevelNetworkPartitionContext);
-            }
-            String partitionId = null;
-            String networkPartitionId = parentInstanceContext.getNetworkPartitionId();
-            if (deploymentPolicyName != null) {
-                DeploymentPolicy deploymentPolicy = PolicyManager.getInstance()
-                        .getDeploymentPolicy(deploymentPolicyName);
-                ChildLevelNetworkPartition networkPartition = deploymentPolicy.
-                        getChildLevelNetworkPartition(parentInstanceContext.getNetworkPartitionId());
-
-                AutoscaleAlgorithm algorithm = this.getAutoscaleAlgorithm(networkPartition.getPartitionAlgo());
-                //Partition partition = algorithm.getNextScaleUpPartitionContext(groupLevelNetworkPartitionContext, this.id);
-                //TODO need to find the partition. partitionId=?
-            }
-
-            instanceId = createGroupInstance(group, parentInstanceId, partitionId, networkPartitionId);
-            GroupInstanceContext instanceContext = new GroupInstanceContext(instanceId);
-            //TODO to add new partitionContext
-            instanceIds.add(instanceId);
-        }
-        startDependency(group, instanceIds);
-    }*/
-
-    /**
-     * This will start the group instance based on the given parent instanceId
-     *
-     * @param group
-     * @param parentInstanceId
-     * @throws org.apache.stratos.autoscaler.exception.application.MonitorNotFoundException
-     */
-    /*
-    public void createInstanceAndStartDependency(Group group, String parentInstanceId)
-            throws MonitorNotFoundException {
-        String deploymentPolicyName = group.getDeploymentPolicy();
-
-        String instanceId;
-        Application application = ApplicationHolder.getApplications().getApplication(this.appId);
-        Instance parentInstanceContext;
-        if (this.id.equals(appId)) {
-            parentInstanceContext = application.getInstanceContexts(parentInstanceId);
-        } else {
-            Group group1 = application.getGroupRecursively(this.parent.getId());
-            parentInstanceContext = group1.getInstanceContexts(parentInstanceId);
-        }
-
-        GroupLevelNetworkPartitionContext groupLevelNetworkPartitionContext;
-        if (this.networkPartitionCtxts.containsKey(parentInstanceContext)) {
-            groupLevelNetworkPartitionContext = this.networkPartitionCtxts.
-                    get(parentInstanceContext.getNetworkPartitionId());
-        } else {
-            groupLevelNetworkPartitionContext = new GroupLevelNetworkPartitionContext(
-                    parentInstanceContext.getNetworkPartitionId(),
-                    null, null);
-            this.addNetworkPartitionContext(groupLevelNetworkPartitionContext);
-        }
-        String partitionId = null;
-        String networkPartitionId = parentInstanceContext.getNetworkPartitionId();
-
-        ChildPolicy policy = PolicyManager.getInstance().
-                getDeploymentPolicyByApplication(group.getApplicationId()).
-                getChildPolicy(group.getUniqueIdentifier());
-
-        ChildLevelNetworkPartition networkPartition = policy.
-                getChildLevelNetworkPartition(parentInstanceContext.getNetworkPartitionId());
-
-        if(policy != null) {
-            AutoscaleAlgorithm algorithm = this.getAutoscaleAlgorithm(networkPartition.getPartitionAlgo());
-            //Partition partition = algorithm.getNextScaleUpPartitionContext(networkPartition.getChildLevelPartitions());
-            //TODO need to find the partition. partitionId=? 
-        }
-
-
-        instanceId = createGroupInstance(group, parentInstanceId, partitionId, networkPartitionId);
-        startDependency(group, instanceId);
-    }
-    */
    
     /**
      * Gets the parent instance context.
@@ -568,7 +452,6 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
      * @param parentInstanceIds parent instanceIds used to start the child instance
      * @throws TopologyInConsistentException
      */
-
     public void createInstanceAndStartDependencyAtStartup(Group group, List<String> parentInstanceIds)
             throws TopologyInConsistentException {
         List<String> instanceIdstoStart = new ArrayList<String>();
@@ -641,8 +524,6 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
     	// TODO: Need to add functionality when restart happens
     	// Should only do required work from Monitor side and not from Topology since that is already existent
     }
-
-    
     
     /**
      * This will create the group instance in the applications Topology
@@ -692,9 +573,8 @@ public class GroupMonitor extends ParentComponentMonitor implements Runnable {
     }
 
     public GroupLevelPartitionContext getPartitionCtxt(String partitionId) {
-
-
-        for(GroupLevelPartitionContext partitionContext : partitionContexts){
+        
+    	for(GroupLevelPartitionContext partitionContext : partitionContexts){
             if(partitionContext.getPartitionId().equals(partitionId)){
                 return partitionContext;
             }
